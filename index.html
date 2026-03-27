@@ -310,42 +310,24 @@
             .filter-group { min-width: 100%; border-bottom: 1px dotted #ccc; padding-bottom: 15px; margin-bottom: 10px; }
             .filter-options { max-height: 150px; }
 
-            /* 数据截止日期 - 极限单行精简 */
-            .data-date-banner { 
-                font-size: 11px; padding: 4px 10px; 
-                display: flex !important; flex-direction: row !important; 
-                justify-content: center !important; align-items: center !important; 
-                border-radius: 6px; background: #fff3e0; border: 1px solid #ffe0b2;
-                margin: 0px 0 12px 0; color: #e65100;
-                width: 100%; box-sizing: border-box; gap: 4px;
-                height: auto; min-height: 0; box-shadow: none;
+            /* 彻底恢复最原始的 KPI 与 横幅样式 */
+            .data-date-banner {
+                padding: 15px; font-size: 18px; line-height: 1.6;
+                flex-direction: column; text-align: center;
+                border-radius: 8px; font-weight: bold;
             }
-            .data-date-banner .date-label, .data-date-banner .progress-label { display: none; }
-            .data-date-banner .date-value { font-size: 11px; font-weight: bold; }
-            .data-date-banner .date-value::before { content: "截止: "; font-weight: normal; opacity: 0.7; }
-            .data-date-banner .progress-value { font-size: 11px; font-weight: bold; }
-            .data-date-banner .progress-value::before { content: "进度: "; font-weight: normal; opacity: 0.7; }
-            .data-date-banner .progress-divider { margin: 0 4px; opacity: 0.3; display: inline-block; }
-            
-            /* KPI 对称两列压缩网格 */
-            .kpi-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0; background-color: transparent; margin-bottom: 20px; }
-            .kpi-box { 
-                background-color: #203764; background-image: linear-gradient(to bottom right, #203764, #182a4d);
-                border-radius: 6px; 
-                padding: 10px 8px; 
-                border-right: none;
-                margin-bottom: 0;
-                display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            .kpi-box:nth-child(5) { grid-column: span 2; padding: 12px 10px; }
-            .kpi-title { font-size: 10px; margin-bottom: 4px; color: #a6bfe1; text-transform: uppercase; letter-spacing: 0.05em;}
-            .kpi-value { font-size: 18px; }
+            .data-date-banner .date-label, .data-date-banner .progress-label { display: inline; }
+            .data-date-banner .progress-divider { display: block; margin: 10px 0; opacity: 0.5; }
 
-            .header-bar { display: none; }
-            
-            /* 底部导入区域 */
-            .import-source-container { border-top: 1px dashed #ccc; padding: 40px 0; margin-top: 30px; text-align: center; opacity: 0.7;}
-            .import-source-container .upload-btn { background-color: #f8f9fa; color: #666; border: 1px solid #ddd; font-size: 12px; padding: 8px 30px; border-radius: 20px; display: inline-block; cursor: pointer; }
+            .kpi-container { display: flex; flex-direction: column; gap: 15px; }
+            .kpi-box { padding: 25px 20px; border-radius: 12px; margin-bottom: 5px; }
+            .kpi-value { font-size: 28px; font-weight: bold; }
+            .kpi-title { font-size: 14px; margin-bottom: 8px; }
+
+            .header-bar h2 { font-size: 22px; }
+            /* 底部导入区域样式 */
+            .import-source-container { border-top: 1px dashed #ccc; padding: 40px 0; margin-top: 40px; text-align: center; }
+            .import-source-container .upload-btn-bottom { background-color: #f8f9fa; color: #666; border: 1px solid #ddd; font-size: 16px; padding: 12px 40px; border-radius: 30px; display: inline-block; cursor: pointer; }
             
             .mom-toggle-container { flex-wrap: wrap; justify-content: center; }
             .sales-toggle-container { flex-wrap: wrap; justify-content: flex-start; }
