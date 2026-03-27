@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据加密转换工具</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <style>
         :root {
             --primary-color: #4472c4;
@@ -165,13 +167,38 @@
 
             reader.onload = function(e) {
                 try {
-                    const arrayBuffer = e.target.result;
-                    const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+                    // 1. 读取原生 Excel 数据
+                    const data = new Uint8Array(e.target.result);
+                    
+                    // 2. 使用 SheetJS 解析 Excel
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 3. 提取精简版二维 JSON 数组
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        raw: false,
+                        defval: ''
+                    });
+                    
+                    // 过滤明显的空行以节省体积
+                    const validData = jsonData.filter(row => row && row.length > 0 && row.some(cell => String(cell).trim() !== ''));
+                    const jsonString = JSON.stringify(validData);
+                    
+                    // 4. Pako.js 极限压缩 (Gzip Deflate 算法)
+                    const compressedUint8Array = pako.deflate(jsonString);
+                    
+                    // 5. 转换为 CryptoJS WordArray 并加密
+                    const wordArray = CryptoJS.lib.WordArray.create(compressedUint8Array);
                     const encrypted = CryptoJS.AES.encrypt(wordArray, password).toString();
+                    
+                    // 6. 生成最终的组合数据包
                     const filePayload = file.name + '|' + encrypted;
                     resolve(filePayload);
                 } catch (err) {
-                    reject('加密过程中出现错误。');
+                    console.error("加密异常:", err);
+                    reject('加密过程中出现错误。请确保上传了规范的 Excel 文件。');
                 }
             };
             reader.readAsArrayBuffer(file);
