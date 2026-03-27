@@ -308,57 +308,45 @@
             }
             .filters.show { display: flex; }
             .filter-group { min-width: 100%; border-bottom: 1px dotted #ccc; padding-bottom: 15px; margin-bottom: 10px; }
-            .filter-options { max-height: 150px; /* 让手机端看到更多的筛选项，不再局限于72px */ }
+            .filter-options { max-height: 150px; }
 
-            /* 数据截止日期 */
-            .data-date-banner { font-size: 12px; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
-            .data-date-banner .date-value { font-size: 14px; }
-            .data-date-banner .progress-value { font-size: 14px; }
-            .data-date-banner .progress-divider { display: none; }
-            
-            /* KPI卡片两列/三列排布 */
-            .kpi-container { flex-wrap: wrap; gap: 10px; padding: 10px; background-color: transparent; }
-            .kpi-box { 
-                flex: 1 1 45%; 
-                background-color: #203764; 
-                border-radius: 5px; 
-                padding: 10px; 
-                border-right: none;
-                margin-bottom: 5px;
+            /* 数据截止日期 - 极限单行精简 */
+            .data-date-banner { 
+                font-size: 11px; padding: 4px 10px; 
+                display: flex !important; flex-direction: row !important; 
+                justify-content: center !important; align-items: center !important; 
+                border-radius: 6px; background: #fff3e0; border: 1px solid #ffe0b2;
+                margin: 0px 0 12px 0; color: #e65100;
+                width: 100%; box-sizing: border-box; gap: 4px;
+                height: auto; min-height: 0; box-shadow: none;
             }
-            .kpi-title { font-size: 12px; }
+            .data-date-banner .date-label, .data-date-banner .progress-label { display: none; }
+            .data-date-banner .date-value { font-size: 11px; font-weight: bold; }
+            .data-date-banner .date-value::before { content: "截止: "; font-weight: normal; opacity: 0.7; }
+            .data-date-banner .progress-value { font-size: 11px; font-weight: bold; }
+            .data-date-banner .progress-value::before { content: "进度: "; font-weight: normal; opacity: 0.7; }
+            .data-date-banner .progress-divider { margin: 0 4px; opacity: 0.3; display: inline-block; }
+            
+            /* KPI 对称两列压缩网格 */
+            .kpi-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0; background-color: transparent; margin-bottom: 20px; }
+            .kpi-box { 
+                background-color: #203764; background-image: linear-gradient(to bottom right, #203764, #182a4d);
+                border-radius: 6px; 
+                padding: 10px 8px; 
+                border-right: none;
+                margin-bottom: 0;
+                display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .kpi-box:nth-child(5) { grid-column: span 2; padding: 12px 10px; }
+            .kpi-title { font-size: 10px; margin-bottom: 4px; color: #a6bfe1; text-transform: uppercase; letter-spacing: 0.05em;}
             .kpi-value { font-size: 18px; }
 
-            /* 表格高度自适应，横向滚动 */
-            .table-container { 
-                height: auto !important; 
-                max-height: 65vh !important; /* 随内容撑开，不固定500px */
-                overflow-x: auto; 
-                -webkit-overflow-scrolling: touch; 
-            }
-            table { min-width: 800px; /* 强制表格宽度 */ }
-            th, td { font-size: 12px; padding: 6px; }
+            .header-bar { display: none; }
             
-            /* 冻结三个表格的第一列 */
-            #data-table th:first-child, #data-table td:first-child,
-            #product-table th:first-child, #product-table td:first-child,
-            #sales-table th:first-child, #sales-table td:first-child {
-                position: sticky;
-                left: 0;
-                z-index: 5;
-            }
-            /* 第一列背景色，防止透明背景字体重叠 */
-            #data-table th:first-child, #product-table th:first-child, #sales-table th:first-child {
-                background-color: #203764;
-                z-index: 15; /* 表头交叉处层级更高 */
-            }
-            #data-table .prov-row td:first-child, #product-table .cat-row td:first-child, #sales-table .prov-row td:first-child { background-color: #e2efda; }
-            #data-table .office-row td:first-child, #product-table .name-row td:first-child, #sales-table .office-row td:first-child { background-color: #fce4d6; }
-            #data-table .hospital-row td:first-child, #product-table .prov-row td:first-child, #sales-table .hospital-row td:first-child { background-color: #fff; }
-            #product-table .office-row td:first-child { background-color: #ddebf7; }
-            #product-table .hospital-row td:first-child { background-color: #ffffff; }
-
-            /* 按钮和切换器 */
+            /* 底部导入区域 */
+            .import-source-container { border-top: 1px dashed #ccc; padding: 40px 0; margin-top: 30px; text-align: center; opacity: 0.7;}
+            .import-source-container .upload-btn { background-color: #f8f9fa; color: #666; border: 1px solid #ddd; font-size: 12px; padding: 8px 30px; border-radius: 20px; display: inline-block; cursor: pointer; }
+            
             .mom-toggle-container { flex-wrap: wrap; justify-content: center; }
             .sales-toggle-container { flex-wrap: wrap; justify-content: flex-start; }
             
@@ -452,10 +440,6 @@
     <div class="sticky-header">
         <div class="header-bar">
             <h2>📊 销售数据交互看板</h2>
-            <label class="upload-btn">
-                导入数据源 (CSV/Excel)
-                <input type="file" id="file-upload" accept=".csv,.xlsx,.xls">
-            </label>
         </div>
 
         <div id="message-area"></div>
@@ -702,6 +686,12 @@
         </div>
 
 
+        <div class="import-source-container">
+            <label class="upload-btn">
+                导入数据源 (CSV/Excel)
+                <input type="file" id="file-upload" accept=".csv,.xlsx,.xls">
+            </label>
+        </div>
     </div>
 
     <div id="empty-state" class="empty-state">
