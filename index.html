@@ -45,6 +45,7 @@
         .filter-option.checked { background-color: #c5d9f1; }
         
         /* 产品筛选特殊样式 */
+        .filter-group.product-zx { border-color: #7030a0; background-color: #f3eaf7; }
         .filter-group.product-cat { border-color: #ed7d31; }
         .filter-group.product-name { border-color: #70ad47; }
         .filter-group.product-name.disabled { opacity: 0.6; pointer-events: none; background-color: #f0f0f0; }
@@ -496,6 +497,13 @@
             </div>
             <div class="filter-options" id="f-office"></div>
         </div>
+        <div class="filter-group product-zx">
+            <div class="filter-title">
+                <span>专线</span>
+                <span class="select-all" onclick="toggleSelectAll('zx')">全选</span>
+            </div>
+            <div class="filter-options" id="f-zx"></div>
+        </div>
         <div class="filter-group product-cat">
             <div class="filter-title">
                 <span>产品大类</span>
@@ -749,6 +757,7 @@
         month: new Set(),
         prov: new Set(),
         office: new Set(),
+        zx: new Set(),
         cat: new Set(),
         name: new Set()
     };
@@ -756,6 +765,7 @@
     // 联动数据映射
     let productMapping = {}; // {产品大类: [产品名称列表]}
     let officeMapping = {};  // {所在省区: [所在办事处列表]}
+    let zxMapping = {};      // {专线: [产品大类列表]}
     
     // 表格排序状态 - 支持三级排序
     let tableSortState = { 
@@ -1179,9 +1189,10 @@
         rawData.forEach(row => {
             if (filterState.prov.size > 0 && !filterState.prov.has(row['所在省区'])) return;
             if (filterState.office.size > 0 && !filterState.office.has(row['所在办事处'])) return;
+            if (filterState.zx.size > 0 && !filterState.zx.has(row['专线'])) return;
             if (filterState.cat.size > 0 && !filterState.cat.has(row['产品大类'])) return;
             if (filterState.name.size > 0 && !filterState.name.has(row['产品名称'])) return;
-            
+
             const rowMonth = row['月份'];
             let matchedYear = null;
             if (matchMap[2026] && matchMap[2026].has(rowMonth)) matchedYear = 2026;
@@ -1553,6 +1564,7 @@
             // 处理数值并建立联动映射
             productMapping = {};
             officeMapping = {};
+            zxMapping = {};
             let errorCount = 0;
             
             rawData.forEach((row, index) => {
@@ -1569,6 +1581,13 @@
                     if (cat && name) {
                         if (!productMapping[cat]) productMapping[cat] = new Set();
                         productMapping[cat].add(name);
+                    }
+
+                    // 建立专线和产品大类的映射
+                    const zx = row['专线'];
+                    if (zx && cat) {
+                        if (!zxMapping[zx]) zxMapping[zx] = new Set();
+                        zxMapping[zx].add(cat);
                     }
                     
                     // 建立省区和办事处的映射
@@ -1589,6 +1608,9 @@
             }
             for (let prov in officeMapping) {
                 officeMapping[prov] = [...officeMapping[prov]].sort();
+            }
+            for (let zx in zxMapping) {
+                zxMapping[zx] = [...zxMapping[zx]].sort();
             }
 
             console.log('产品映射:', productMapping);
@@ -1649,6 +1671,7 @@
             month: '月份',
             prov: '所在省区',
             office: '所在办事处',
+            zx: '专线',
             cat: '产品大类',
             name: '产品名称'
         };
@@ -1706,11 +1729,16 @@
             label.classList.remove('checked');
         }
         
+        // 如果专线改变，更新产品大类和产品名称选项
+        if (key === 'zx') {
+            updateProductCatFilter();
+        }
+
         // 如果产品大类改变，更新产品名称选项
         if (key === 'cat') {
             updateProductNameFilter();
         }
-        
+
         // 如果省区改变，更新办事处选项
         if (key === 'prov') {
             updateOfficeFilter();
@@ -1739,14 +1767,18 @@
             }
         });
         
+        if (key === 'zx') {
+            updateProductCatFilter();
+        }
+
         if (key === 'cat') {
             updateProductNameFilter();
         }
-        
+
         if (key === 'prov') {
             updateOfficeFilter();
         }
-        
+
         applyFilters();
     }
 
@@ -1776,8 +1808,54 @@
         const badge = document.getElementById('filter-badge');
         if (!badge) return;
         
-        let totalSelected = filterState.month.size + filterState.prov.size + filterState.office.size + filterState.cat.size + filterState.name.size;
+        let totalSelected = filterState.month.size + filterState.prov.size + filterState.office.size + filterState.zx.size + filterState.cat.size + filterState.name.size;
         badge.textContent = totalSelected + '项';
+    }
+
+    // 更新产品大类筛选器（根据选中的专线）
+    function updateProductCatFilter() {
+        const selectedZx = filterState.zx;
+        const catContainer = document.getElementById('f-cat');
+
+        if (selectedZx.size === 0) {
+            catContainer.innerHTML = '<div style="color: #999; padding: 5px;">请先选择专线</div>';
+            filterState.cat.clear();
+            updateProductNameFilter();
+            return;
+        }
+
+        // 收集选中专线下的所有产品大类
+        const availableCats = new Set();
+        selectedZx.forEach(zx => {
+            if (zxMapping[zx]) {
+                zxMapping[zx].forEach(cat => availableCats.add(cat));
+            }
+        });
+
+        const catList = [...availableCats].sort();
+
+        // 移除不在当前专线中的产品大类
+        filterState.cat.forEach(cat => {
+            if (!availableCats.has(cat)) filterState.cat.delete(cat);
+        });
+
+        // 重新渲染产品大类选项，如当前无选中则默认全选
+        if (filterState.cat.size === 0) {
+            catList.forEach(v => filterState.cat.add(v));
+        }
+
+        catContainer.innerHTML = catList.map(v => {
+            const checked = filterState.cat.has(v) ? 'checked' : '';
+            const className = filterState.cat.has(v) ? 'filter-option checked' : 'filter-option';
+            return `
+                <label class="${className}" data-value="${v}">
+                    <input type="checkbox" ${checked} onchange="toggleFilter('cat', '${v}', this)">
+                    <span>${v}</span>
+                </label>
+            `;
+        }).join('');
+
+        updateProductNameFilter();
     }
 
     // 更新产品名称筛选器（根据选中的产品大类）
@@ -1884,6 +1962,7 @@
             if (filterState.month.size > 0 && !filterState.month.has(row['月份'])) return false;
             if (filterState.prov.size > 0 && !filterState.prov.has(row['所在省区'])) return false;
             if (filterState.office.size > 0 && !filterState.office.has(row['所在办事处'])) return false;
+            if (filterState.zx.size > 0 && !filterState.zx.has(row['专线'])) return false;
             if (filterState.cat.size > 0 && !filterState.cat.has(row['产品大类'])) return false;
             if (filterState.name.size > 0 && !filterState.name.has(row['产品名称'])) return false;
             return true;
@@ -3056,6 +3135,7 @@
         rawData.forEach(row => {
             if (filterState.prov.size > 0 && !filterState.prov.has(row['所在省区'])) return;
             if (filterState.office.size > 0 && !filterState.office.has(row['所在办事处'])) return;
+            if (filterState.zx.size > 0 && !filterState.zx.has(row['专线'])) return;
             if (filterState.cat.size > 0 && !filterState.cat.has(row['产品大类'])) return;
             if (filterState.name.size > 0 && !filterState.name.has(row['产品名称'])) return;
 
