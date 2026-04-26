@@ -860,18 +860,6 @@
         autoLoadData();
     }
 
-    // 网络/处理错误时重置登录按钮并显示错误（不计入失败次数）
-    function showLoginLoadError(message) {
-        document.getElementById('login-overlay').style.display = 'flex';
-        document.getElementById('main-dashboard').style.display = 'none';
-        const errorHint = document.getElementById('login-error');
-        errorHint.textContent = message || '加载失败，请刷新重试';
-        errorHint.style.display = 'block';
-        const loginBtn = document.querySelector('.login-btn');
-        loginBtn.textContent = '重新验证';
-        loginBtn.disabled = false;
-    }
-
     // 当解密失败时，退回到登录页面
     function returnToLogin(message) {
         userPassword = '';
@@ -1056,7 +1044,8 @@
 
     async function autoLoadData() {
         if (typeof CryptoJS === 'undefined' || typeof XLSX === 'undefined' || typeof pako === 'undefined') {
-            showLoginLoadError('核心库加载超时，请检查您的网络后点击"重新验证"');
+            resetEmptyState();
+            showMessage('核心库加载超时，请检查您的网络或刷新页面', 'error');
             return;
         }
         await initDB();
@@ -1070,7 +1059,8 @@
                 await attemptLoad();
             } catch (retryErr) {
                 console.error('重试失败:', retryErr);
-                showLoginLoadError('加载失败：' + (retryErr.message || '未知错误') + '，请重试');
+                resetEmptyState();
+                showMessage('加载失败：' + (retryErr.message || '未知错误') + '，请刷新重试', 'error');
             }
         }
     }
